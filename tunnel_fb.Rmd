@@ -1,0 +1,148 @@
+---
+title: "tunnel_fb_analyses"
+author: "Lucrezia Lonardo"
+date: "2025-06-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+rm(list=ls())
+library(tidyverse)
+library(ggplot2)
+library(lme4)
+```
+
+## R Markdown
+
+```{r cars}
+#import data
+xdata <- read.csv("data/Tunnel_FB_tested_dogs.csv", header = TRUE) %>% 
+   mutate(first_touch_letter = as.factor(first_touch_letter),
+         condition = as.factor(condition),
+         age_months = as.numeric(age_months)) %>% 
+  filter(first_touch_letter %in% c("A", "B")) %>%   # Keep rows where first_touch_letter is "A" or "B" in case of NAs
+  filter(CDL_name!="Vanilla2") %>% #should be in the excluded tab, did not meet criteria in fam. phase 1
+  droplevels()
+
+which(is.na(xdata$first_touch_letter)) #double check for NAs
+```
+
+## Plots
+
+###Barplot all breeds
+```{r pressure, echo=FALSE}
+plot.data <- xdata %>%
+  mutate(choice = ifelse(first_touch_letter == "A", 1, 0)) %>%
+  mutate(condition = fct_relevel(
+    fct_recode(
+      condition,
+      "false belief" = "false_belief",
+      "true belief" = "true_belief"
+    ),
+    "false belief",
+    "true belief"
+  )) %>% #specify order of factor levels for factor_relevel
+  group_by(condition) %>% 
+  summarise(
+    mean.choiceA = mean(choice),
+    sd.choiceA = sd(choice),
+    n.choseA = sum(choice),
+    median.choiceA = median(choice),
+    n.tested.per.cond = length(choice),
+    se.choiceA = sd(choice) / sqrt(length(choice))
+  )
+
+##barplot of choices by experimental group
+
+p.choice <- ggplot(data = plot.data, aes(x = condition, y = mean.choiceA)) +
+  geom_bar(stat = "identity", alpha = 0.5) +
+  geom_errorbar(aes(ymin = mean.choiceA - se.choiceA, ymax = mean.choiceA + #error bars represent standard error
+                      se.choiceA),
+                width = .2) +
+  #geom_signif(comparisons=list(c("False Belief", #"Knowledge")), annotations="*",
+  #             y_position = 0.75, tip_length = 0.04, #vjust=0.4) +
+  #ylim(0.2,0.6)+
+  theme_classic() +
+  labs(x = "Experimental group", y = "Proportion of bucket A choices")+
+  ggtitle("All breeds (N=50)")
+
+p.choice
+```
+
+```{r}
+#add column with independent vs cooperative breeds distinction 
+xdata<-xdata %>% 
+  mutate(breed_type = ifelse(FCI_group %in% c("1", "2", "7", "8"), "cooperative", "independent"))
+
+table(xdata$breed_type)
+
+table(xdata$first_touch_letter, xdata$breed_type, xdata$condition)
+
+# #add column with experience in dogs sport as binary (yes/no) variable
+# xdata<-xdata %>% 
+#   mutate(training = ifelse(experience_in_dog_sport=="no", "no", "yes"))
+# 
+# table(xdata$training)
+# 
+# table(xdata$FCI_group[xdata$training=="no"])
+# 
+# table(xdata$first_touch_letter, xdata$training, xdata$condition)
+
+#experimenter ID
+table(xdata$communicator, xdata$first_touch_letter, xdata$condition)
+```
+### Plot breed performance
+```{r}
+#Fig. S3
+cooperative_data<-xdata %>% 
+  filter(breed_type!="independent")
+independent_data<-xdata %>% 
+  filter(breed_type!="cooperative")
+
+#mosaic plot data for cooperative
+mosaic.cooperative.plot.data  <- cooperative_data %>%
+  mutate(first_touch_letter = fct_relevel(first_touch_letter, "B", "A")) %>%
+  mutate(condition = fct_relevel(
+    fct_recode(
+      condition,
+      "False belief" = "false_belief",
+      "True Belief" = "true_belief"
+    ),
+    "False belief",
+    "True Belief"
+  )) #specify order of factor levels for factor_relevel
+
+#mosaic plot data for independent
+mosaic.independent.plot.data  <- independent_data %>%
+  mutate(first_touch_letter = fct_relevel(first_touch_letter, "B", "A")) %>%
+  mutate(condition = fct_relevel(
+    fct_recode(
+      condition,
+      "False belief" = "false_belief",
+      "True Belief" = "true_belief"
+    ),
+    "False belief",
+    "True Belief"
+  )) #specify order of factor levels for factor_relevel
+
+
+png("./plots/breed_type_mosaic_plot.png", width = 1600, height = 800) 
+par(mfrow=c(1, 2), mar=c(6, 7.8, 6, 5), mgp=c(4.5, 1.5, 0), tcl=-0.15, las=1,
+    cex.axis = 2.6,   # Increase axis tick labels
+    cex.lab = 2.9,    # Increase axis labels
+    cex.main = 3.5)     # Increase plot titles
+
+plot(mosaic.cooperative.plot.data$condition,mosaic.cooperative.plot.data$first_touch_letter,
+  xlab = "Condition",
+  ylab = "Bucket chosen",
+  main = "Cooperative breeds" )
+
+plot(mosaic.independent.plot.data$condition,mosaic.independent.plot.data$first_touch_letter,
+  xlab = "Condition",
+  ylab = "Bucket chosen",
+  main = "Independent breeds" )
+dev.off()
+
+
+```
+
