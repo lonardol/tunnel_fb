@@ -1,14 +1,14 @@
 dog_ID,CDL_name,sex,castrated,test_date,birth_date,age_months,breed,FCI_group,Expierence_in_dog_sports,condition,set_up,first_baited_bucket,first_trial_second_fam,first_trial_third_fam,number_trials_fam_phase1,number_trials_fam_phase2,number_trials_fam_phase3,tot_nr_trials_fam,communicator,hider,no_choice_trials,first_choice_letter,first_touch_letter,notes
 1,Hago,M,no,27/5/2025,10/5/2014,132,border_terrier,3,,false_belief,right,blue,displacement,displacement,2,3,2,7,JAS,FL,,B,B,
-2,Aaron2,M,yes,02/06/2025,29/05/2025,0,vizsla,7,,false_belief,right,blue,no_displacement,no_displacement,2,2,2,6,FL,JAS,,B,B,
+2,Aaron2,M,yes,02/06/2025,29/05/2021,48,vizsla,7,,false_belief,right,blue,no_displacement,no_displacement,2,2,2,6,FL,JAS,,B,B,
 3,Leo5,M,no,8/5/2025,10/6/2021,46,australian_shepherd,1,"Obiedience, BGH",false_belief,right,blue,no_displacement,displacement,2,2,2,6,FL,JAS,,A,A,
 4,Kimi2,F,yes,16/6/2025,26/8/2021,45,golden_retriever,8,"Nasenarbeit, Mantrailing ",false_belief,right,blue,displacement,no_displacement,2,2,2,6,JAS,FL,,A,A,"Just before the final trial the dog got loose, the tunnel was obscured by the communicator blocking it and the dog seemed more focussed on the hider. It did not seem like the dog saw the inside of the tunnel and the trial was continued."
 5,Asha,F,no,16/6/2025,29/12/2016,101,rhodesian_ridgeback,6,"BGH, agility",false_belief,right,blue,displacement,displacement,2,2,2,6,JAS,FL,,A,A,"Recording started after the practice with the cups, The foam was removed from the cups because she tried to eat it."
-6,Quentin,M,no,19/6/2025,15/3/2025,3,golden_retriever,8,"Wiener Hundeführschein, BH, Verkehrstest, BGH3, Retriever Basisprüfungen, Gehorsams u. Apportierprüfungen",false_belief,right,blue,no_displacement,no_displacement,2,4,2,8,FL,JAS,,A,A,
+6,Quentin3,M,no,19/6/2025,15/3/2019,75,golden_retriever,8,"Wiener Hundeführschein, BH, Verkehrstest, BGH3, Retriever Basisprüfungen, Gehorsams u. Apportierprüfungen",false_belief,right,blue,no_displacement,no_displacement,2,4,2,8,FL,JAS,,A,A,
 7,Aoife,F,yes,19/6/2025,21/3/2013,146,irish_glen_of_imaal_terrier,3,,false_belief,right,blue,no_displacement,displacement,2,2,4,8,JAS,FL,,A,A,Seemed to have a preference for cup a during the trials
 8,Leia5,F,yes,23/6/2025,17/7/2017,95,labrador_retriever,8,,false_belief,right,blue,displacement,no_displacement,2,4,2,8,FL,JAS,,A,A,
-9,,,,,,0,,,,false_belief,right,blue,displacement,displacement,,,,0,,,,,,
-10,,,,,,0,,,,false_belief,right,blue,no_displacement,no_displacement,,,,0,,,,,,
+9,Abby5,F,no,9/7/2025,19/8/2021,46,miniature_muensterlaender,7,,false_belief,right,blue,displacement,displacement,2,2,2,6,JH,JAS,,A,A,
+10,Milow5,M,yes,9/7/2025,17/3/2020,63,labrador_retriever,8,,false_belief,right,blue,no_displacement,no_displacement,2,2,2,6,JAS,JH,,A,A,
 11,,,,,,0,,,,false_belief,right,blue,no_displacement,displacement,,,,0,,,,,,
 12,,,,,,0,,,,false_belief,right,blue,displacement,no_displacement,,,,0,,,,,,
 13,,,,,,0,,,,false_belief,right,blue,displacement,displacement,,,,0,,,,,,
@@ -20,7 +20,7 @@ dog_ID,CDL_name,sex,castrated,test_date,birth_date,age_months,breed,FCI_group,Ex
 19,Moon2,F,no,2/6/2025,31/10/2021,43,australian_shepherd,1,,false_belief,right,grey,no_displacement,no_displacement,2,3,2,7,FL,JAS,,B,B,communicator removed bucket in trial 3 instead of hider
 20,Pasha,M,no,12/6/2025,1/4/2023,26,golden_retriever,8, ,false_belief,right,grey,displacement,displacement,3,2,2,7,JAS,FL,,A,A,
 21,Paddy,M,no,25/6/2025,18/3/2017,99,irish_red_and_white_setter,7,"Wesenstest, Field Trial Solo: vorzüglich, 8x Derby Solo",false_belief,right,grey,no_displacement,displacement,2,2,2,6,JAS,JH,,A,A,
-22,,,,,,0,,, ,false_belief,right,grey,displacement,no_displacement,,,,0,,,,,,
+22,Abby4,F,yes,9/7/2025,27/4/2019,74,labrador_retriever,8,Therapy dog,false_belief,right,grey,displacement,no_displacement,2,2,2,6,JH,JAS,,A,A,
 23,,,,,,0,,,,false_belief,right,grey,no_displacement,no_displacement,,,,0,,,,,,
 24,,,,,,0,,,,false_belief,right,grey,displacement,displacement,,,,0,,,,,,
 25,,,,,,0,,,,false_belief,right,grey,no_displacement,displacement,,,,0,,,,,,
@@ -34,11 +34,11 @@ dog_ID,CDL_name,sex,castrated,test_date,birth_date,age_months,breed,FCI_group,Ex
 33,Aramis8,M,no,20/5/2025,6/7/2021,46,wolfspitz,5,"Bgh, Rallyobedience, Obedience",false_belief,left,blue,displacement,no_displacement,2,2,2,6,JAS,JH,,A,A,
 34,Bruno2,M,no,26/5/2025,12/02/2015,123,beagle,6,,false_belief,left,blue,displacement,displacement,4,2,2,8,JAS,FL,,A,A,
 35,Madlain,F,yes,30/5/2025,17/1/2016,112,border_terrier,3,,false_belief,left,blue,no_displacement,no_displacement,2,2,3,7,JAS,JH,,B,B,
-36,Agent,M,no,19/5/2025,6/5/2024,12,border_terrier,3,?,false_belief,left,blue,no_displacement,displacement,4,2,2,8,JH,JAS,,B,B,
+36,Agent,M,no,19/5/2025,6/5/2024,12,border_terrier,3,,false_belief,left,blue,no_displacement,displacement,4,2,2,8,JH,JAS,,B,B,
 37,Lieserl,F,no,5/6/2025,7/4/2015,121,border_collie,1,,false_belief,left,blue,displacement,no_displacement,2,3,2,7,JAS,JH,,B,B,
 38,Ivy6,F,yes,19/6/2025,1/6/2021,48,australian_shepherd,1,"Agility, Training to be a therapy dog",false_belief,left,blue,displacement,displacement,2,2,2,6,JAS,JH,,A,A,
-39,,,,,,0,,,,false_belief,left,blue,no_displacement,no_displacement,,,,0,,,,,,
-40,,,,,,0,,,,false_belief,left,blue,no_displacement,displacement,,,,0,,,,,,
+39,Willi2,M,yes,1/7/2025,1/12/2022,31,labrador_retriever,8,,false_belief,left,blue,no_displacement,no_displacement,2,2,2,6,JH,JAS,,A,A,did not get the treat in trial 1
+40,Ibsen,M,no,7/7/2025,22/10/2023,20,australian_shepherd,1,,false_belief,left,blue,no_displacement,displacement,3,2,2,7,JAS,FL,,A,A,
 41,,,,,,0,,,,false_belief,left,blue,displacement,no_displacement,,,,0,,,,,,
 42,,,,,,0,,,,false_belief,left,blue,displacement,displacement,,,,0,,,,,,
 43,,,,,,0,,,,false_belief,left,blue,no_displacement,no_displacement,,,,0,,,,,,
@@ -46,11 +46,11 @@ dog_ID,CDL_name,sex,castrated,test_date,birth_date,age_months,breed,FCI_group,Ex
 45,,,,,,0,,,,false_belief,left,blue,displacement,no_displacement,,,,0,,,,,,
 46,,,,,,0,,,,false_belief,left,grey,displacement,displacement,,,,0,,,,,,
 47,Abby7,F,no,19/5/2025,18/6/2022,35,border_terrier,3,,false_belief,left,grey,no_displacement,no_displacement,3,2,4,9,JH,JAS,,A,A,Repeated a trial in phase one becasue the hider entered the rom too soon
-48,,,,,,0,,,,false_belief,left,grey,no_displacement,displacement,,,,0,,,,,,
+48,Ramses,M,no,3/7/2025,22/11/2019,67,labrador_retriever,8,,false_belief,left,grey,no_displacement,displacement,2,2,2,6,FL,JAS,,A,A,
 49,,,,,,0,,,,false_belief,left,grey,displacement,no_displacement,,,,0,,,,,,
 50,,,,,,0,,,,false_belief,left,grey,displacement,displacement,,,,0,,,,,,
 51,Freddie,M,no,23/4/2025,1/3/2024,13,bedlington_terrier,3,Alltagstraining (Kurs),false_belief,left,grey,no_displacement,no_displacement,2,2,2,6,SV,JAS,,A,A,
-52,Clooney,M,no,19/6/2025,16/5/2017,97,golden_retriever,8,"Wiener Hundeführschein, BH, Verkehrstest, BGH1, Retriever Basis Prüfungen, Gehorsams u. Apportierprüfungen",false_belief,left,grey,no_displacement,displacement,2,2,2,6,FL,JAS,,A,A,
+52,Clooney2,M,no,19/6/2025,16/5/2017,97,golden_retriever,8,"Wiener Hundeführschein, BH, Verkehrstest, BGH1, Retriever Basis Prüfungen, Gehorsams u. Apportierprüfungen",false_belief,left,grey,no_displacement,displacement,2,2,2,6,FL,JAS,,A,A,
 53,,,,,,0,,,,false_belief,left,grey,displacement,no_displacement,,,,0,,,,,,
 54,,,,,,0,,,,false_belief,left,grey,displacement,displacement,,,,0,,,,,,
 55,,,,,,0,,,,false_belief,left,grey,no_displacement,no_displacement,,,,0,,,,,,
@@ -60,9 +60,9 @@ dog_ID,CDL_name,sex,castrated,test_date,birth_date,age_months,breed,FCI_group,Ex
 59,,,,,,0,,,,false_belief,left,grey,no_displacement,no_displacement,,,,0,,,,,,
 60,,,,,,0,,,,false_belief,left,grey,no_displacement,displacement,,,,0,,,,,,
 61,Nuala2,F,no,22/5/2025,24/9/2016,103,border_terrier,3,,true_belief,right,blue,no_displacement,no_displacement,2,2,2,6,JAS,SV,,B,B,
-62,Paige,F,no ,28/5/2025,22/8/2018,81,scottish_terrier,3,,true_belief,right,blue,no_displacement,displacement,2,2,2,6,JAS,JH,,B,B,
+62,Paige,F,no,28/5/2025,22/8/2018,81,scottish_terrier,3,,true_belief,right,blue,no_displacement,displacement,2,2,2,6,JAS,JH,,B,B,
 63,Amber3,F,yes,28/5/2025,13/6/2024,11,scottish_terrier,3,,true_belief,right,blue,displacement,no_displacement,2,4,3,9,JAS,JH,,A,A,"Door opend during trial 8, and the final test had a wrong start"
-64,Finch2,m,no,24/6/2025,23/3/2015,123,labrador_retriever,8,,true_belief,right,blue,displacement,displacement,2,2,2,6,JAS,JH,,A,A,Dog got through the wall during the expierence phase and was on the wrong side. we had to put the wall back together
+64,Finch2,M,no,24/6/2025,23/3/2015,123,labrador_retriever,8,,true_belief,right,blue,displacement,displacement,2,2,2,6,JAS,JH,,A,A,Dog got through the wall during the expierence phase and was on the wrong side. we had to put the wall back together
 65,,,,,,0,,,,true_belief,right,blue,no_displacement,no_displacement,,,,0,,,,,,
 66,Napo,F,no,8/5/2025,17/5/2016,107,australian_shepherd,1,"BH, Verkehrstest, BGH1, Hütehundeprüfung",true_belief,right,blue,no_displacement,displacement,4,2,2,8,SV,JAS,,A,A,
 67,,,,,,0,,,,true_belief,right,blue,displacement,no_displacement,,,,0,,,,,,
@@ -80,19 +80,19 @@ dog_ID,CDL_name,sex,castrated,test_date,birth_date,age_months,breed,FCI_group,Ex
 79,Ginny,F,yes,14/5/2025,7/3/2017,98,border_collie,1,,true_belief,right,grey,no_displacement,displacement,2,2,2,6,JAS,SV,,A,A,
 80,Angus,M,yes,19/5/2025,25/2/2019,74,border_terrier,3,,true_belief,right,grey,displacement,displacement,2,4,2,8,JH,JAS,,B,B,"Buckets where in the wrong place at the start, switched back in trial 4"
 81,Filou11,M,no,24/6/2025,16/5/2023,25,australian_shepherd,1,,true_belief,right,grey,no_displacement,no_displacement,4,2,2,8,JAS,JH,,A,A,
-82,,,,,,0,,,,true_belief,right,grey,displacement,no_displacement,,,,0,,,,,,
-83,,,,,,0,,,,true_belief,right,grey,no_displacement,displacement,,,,0,,,,,,
-84,,,,,,0,,,,true_belief,right,grey,displacement,displacement,,,,0,,,,,,
-85,,,,,,0,,,,true_belief,right,grey,no_displacement,no_displacement,,,,0,,,,,,
-86,,,,,,0,,,,true_belief,right,grey,displacement,no_displacement,,,,0,,,,,,
+82,Nico7,M,yes,30/6/2025,1/10/2015,116,german_spitz,5,"Breitensport (Agility), BGH3",true_belief,right,grey,displacement,no_displacement,2,4,4,10,JAS,FL,,A,A,Hider put their hand quickly back in the bucket during the hiding in the final test
+83,Amica,F,yes,30/6/2025,5/4/2015,122,wolfspitz,5,"Breitensport (Agility), Störberprüfung 1",true_belief,right,grey,no_displacement,displacement,2,2,2,6,JAS,FL,,A,A,
+84,Peanut4,F,no,1/7/2025,13/8/2024,10,parson_russel_terrier,3,,true_belief,right,grey,displacement,displacement,2,4,2,8,JH,JAS,,B,A,Looked like first choice migth have been B. was not very clear in my opinion
+85,Ar-raqim,M,yes,2/7/2025,15/6/2010,180,labrador_retriever,8,,true_belief,right,grey,no_displacement,no_displacement,4,2,2,8,JH,JAS,,A,A,"no foam in cups, because dog would have too much trouble to get the treat"
+86,Enya6,F,no,14/7/2025,8/3/2019,76,australian_shepherd,1,,true_belief,right,grey,displacement,no_displacement,2,2,2,6,JH,JAS,,A,A,
 87,,,,,,0,,,,true_belief,right,grey,no_displacement,displacement,,,,0,,,,,,
 88,,,,,,0,,,,true_belief,right,grey,displacement,displacement,,,,0,,,,,,
 89,,,,,,0,,,,true_belief,right,grey,no_displacement,no_displacement,,,,0,,,,,,
 90,,,,,,0,,,,true_belief,right,grey,displacement,no_displacement,,,,0,,,,,,
-91,Kenai*,M,yes,14/4/2025,1/1/2022,39,tibetan_terrier,3,,true_belief,left,blue,displacement,displacement,4,2,2,8,SV,JAS,,A,A,switched to sausages in trial 5
+91,Bärli,M,yes,1/7/2025,30/3/2015,123,irish_glen_of_imaal_terrier,3,"Wiener Hundeführschein, BH, Verkehrstest, BGH1, fallweise Ausstellungen",true_belief,left,blue,displacement,displacement,4,3,2,9,JH,JAS,,A,A,
 92,Ragnar,M,no,2/5/2025,1/2/2018,87,bedlington_terrier,3,"Verkehrstest, agility",true_belief,left,blue,no_displacement,no_displacement,2,2,2,6,JAS,SV,,A,A,
 93,Lina6,F,yes,21/5/2025,28/9/2018,79,miniature_pinscher,2,,true_belief,left,blue,displacement,no_displacement,2,2,2,6,FL,JAS,,A,A,
-94,Calea,F,yes,30/05/2025,21/01/2021,52,Spitz,5,,true_belief,left,blue,no_displacement,displacement,2,2,2,6,JAS,FL,,B,B,
+94,Calea,F,yes,30/05/2025,21/01/2021,52,spitz,5,,true_belief,left,blue,no_displacement,displacement,2,2,2,6,JAS,FL,,B,B,
 95,Ellie4,F,no,30/5/2025,30/9/2020,56,golden_retriever,8,,true_belief,left,blue,displacement,displacement,2,3,2,7,JAS,JH,,A,A,
 96,Lucy14,F,yes,03/06/2025,09/10/2018,79,beagle,6,,true_belief,left,blue,no_displacement,displacement,2,2,2,6,FL,JAS,,A,A,Owner kept talking to the dog during the manipulation phase
 97,Flynn4,M,no,06/06/2025,04/01/2023,29,golden_retriever,8,,true_belief,left,blue,displacement,no_displacement,2,2,2,6,JH,FL,,A,A,
@@ -100,7 +100,7 @@ dog_ID,CDL_name,sex,castrated,test_date,birth_date,age_months,breed,FCI_group,Ex
 99,,,,,,0,,,,true_belief,left,blue,displacement,displacement,,,,0,,,,,,
 100,,,,,,0,,,,true_belief,left,blue,no_displacement,no_displacement,,,,0,,,,,,
 101,,,,,,0,,,,true_belief,left,blue,displacement,no_displacement,,,,0,,,,,,
-102,,,,,,0,,,,true_belief,left,blue,no_displacement,displacement,,,,0,,,,,,
+102,Heidi6,F,yes,4/7/2025,21/10/2022,32,labrador_retriever,8,,true_belief,left,blue,no_displacement,displacement,2,2,2,6,JAS,JH,,B,B,
 103,,,,,,0,,,,true_belief,left,blue,displacement,displacement,,,,0,,,,,,
 104,,,,,,0,,,,true_belief,left,blue,no_displacement,no_displacement,,,,0,,,,,,
 105,,,,,,0,,,,true_belief,left,blue,displacement,no_displacement,,,,0,,,,,,
@@ -110,8 +110,8 @@ dog_ID,CDL_name,sex,castrated,test_date,birth_date,age_months,breed,FCI_group,Ex
 109,Alma,F,no,5/6/2025,15/3/2016,110,border_collie,1,,true_belief,left,grey,no_displacement,no_displacement,2,2,2,6,JH,JAS,,A,A,
 110,Louie3,M,no,16/6/2025,24/10/2022,31,rhodesian_ridgeback,6, ,true_belief,left,grey,displacement,displacement,2,2,2,6,JAS,FL,,A,A,In the final test the hider went back into the cup to romve the treat and later in the recommending the lid fell off the cup.
 111,Riu,F,no,16/06/2025,28/03/2018,86,australian_shepherd,1,,true_belief,left,grey,no_displacement,displacement,2,2,2,6,FL,JAS,,A,A,
-112,Baloo2,M, no,17/6/2025,5/11/2019,67,labrador_retriever,8,"BGH, agility",true_belief,left,grey,displacement,no_displacement,2,2,2,6,JAS,JH,,A,A,
-113,Vanilla2,F,yes,18/6/2025,21/5/2016,108,golden_retriever,8,BH,true_belief,left,grey,no_displacement,no_displacement,4,2,2,8,JH,JAS,,A,A,the dog never moved the leaf
+112,Baloo2,M,no,17/6/2025,5/11/2019,67,labrador_retriever,8,"BGH, agility",true_belief,left,grey,displacement,no_displacement,2,2,2,6,JAS,JH,,A,A,
+113,Cookie11,F,yes,9/7/2025,24/4/2018,86,miniature_muensterlaender,7,,true_belief,left,grey,no_displacement,no_displacement,2,2,2,6,JAS,JH,,A,A,
 114,,,,,,0,,,,true_belief,left,grey,displacement,displacement,,,,0,,,,,,
 115,,,,,,0,,,,true_belief,left,grey,no_displacement,displacement,,,,0,,,,,,
 116,,,,,,0,,,,true_belief,left,grey,displacement,no_displacement,,,,0,,,,,,
@@ -120,5 +120,5 @@ dog_ID,CDL_name,sex,castrated,test_date,birth_date,age_months,breed,FCI_group,Ex
 119,,,,,,0,,,,true_belief,left,grey,no_displacement,displacement,,,,0,,,,,,
 120,,,,,,0,,,,true_belief,left,grey,displacement,no_displacement,,,,0,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,,,
-,,,,,mean TB age,29.86666667,,,,,,,,,,,,,,,,,,
-,,,,,mean FB age,28.56666667,,,,,,,,,,,,,,,,,,
+,,,,,mean TB age,39.83333333,,,,,,,,,,,,,,,,,,
+,,,,,mean FB age,35.58333333,,,,,,,,,,,,,,,,,,
