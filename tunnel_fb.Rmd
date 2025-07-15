@@ -12,10 +12,11 @@ library(ggplot2)
 library(lme4)
 library(ggsignif)
 library(summarytools)
+library(car)
 source("functions/diagnostic_fcns.r")
 source("functions/glmm_stability.r")
 source("functions/boot_glmm.r")
-load("~/GitHub/tunnel_fb/workspace/Tunnel_FB_workspace.RData")
+#load("~/GitHub/tunnel_fb/workspace/Tunnel_FB_workspace.RData")
 ```
 
 # Import data
@@ -34,8 +35,7 @@ which(is.na(xdata$first_touch_letter)) #double check for NAs
 
 #import latency data
 ldata<-read.csv("data/Tunnel_FB_latency.csv", header = TRUE) %>% 
-  select(where(~ any(!is.na(.)))) %>%  #keeps only columns where at least one value is not NA (gets rid of columns containing only NAs)
-  filter(X!=4 & X!=5) %>%  #remove extra coding of alredy coded subject (Kanai)
+  select(where(~ any(!is.na(.)))) %>%  #keeps only columns where at least one value is not NA (gets rid of columns containing only NAs) %>% 
   select(-c("X", "Scoring", "Start_Frame", "Stop_Frame", "Value"))
 ```
 
@@ -93,10 +93,26 @@ p.choice <- ggplot(data = plot.data, aes(x = condition, y = mean.choiceA)) +
   #ylim(0.2,0.6)+
   theme_classic() +
   labs(x = "Experimental group", y = "Proportion of bucket A choices")+
-  ggtitle("All breeds (N=58)")
+  ggtitle("All breeds (N=63)")
 
 p.choice
 ```
+```{r}
+#save the choices plot
+
+ggsave(
+  "./plots/bucket_A_choices_all_breeds.png",
+  plot = p.choice,
+  device = NULL,
+  scale = 0.8,
+  width = 7,
+  height = 6,
+  #units = c("in", "cm", "mm"),
+  dpi = 320,
+  limitsize = TRUE
+)
+```
+
 
 ```{r}
 #add column with independent vs cooperative breeds distinction 
@@ -122,7 +138,6 @@ table(xdata$communicator, xdata$first_touch_letter, xdata$condition)
 ```
 ### Plot breed performance
 ```{r}
-#Fig. S3
 cooperative_data<-xdata %>% 
   filter(breed_type!="independent")
 independent_data<-xdata %>% 
@@ -155,6 +170,7 @@ mosaic.independent.plot.data  <- independent_data %>%
   )) #specify order of factor levels for factor_relevel
 
 
+#create and save the plot
 png("./plots/breed_type_mosaic_plot.png", width = 1600, height = 800) 
 par(mfrow=c(1, 2), mar=c(6, 7.8, 6, 5), mgp=c(4.5, 1.5, 0), tcl=-0.15, las=1,
     cex.axis = 2.6,   # Increase axis tick labels
@@ -171,7 +187,6 @@ plot(mosaic.independent.plot.data$condition,mosaic.independent.plot.data$first_t
   ylab = "Bucket chosen",
   main = "Independent breeds" )
 dev.off()
-
 
 ```
 ### Plot latencies
@@ -209,12 +224,28 @@ p.latency <- ggplot(data = plot.latency.data, aes(x = condition, y = mean.latenc
                y_position = 26, tip_length = 0.02, vjust=0.4) +
   #ylim(0.2,0.6)+
   theme_classic() +
-  labs(x = "Experimental group", y = "Latency to approach the tunnel")+
+  labs(x = "Experimental group", y = "Latency to approach the tunnel (s)")+
   ggtitle("All breeds (N=63)")
 
 p.latency
 ```
-# Check howoften dogs switched choice after tunnel
+```{r}
+#save the latency plot
+
+ggsave(
+  "./plots/latency_to_approach_tunnel.png",
+  plot = p.latency,
+  device = NULL,
+  scale = 0.8,
+  width = 7,
+  height = 6,
+  #units = c("in", "cm", "mm"),
+  dpi = 320,
+  limitsize = TRUE
+)
+```
+
+# Check how often dogs switched choice after tunnel
 ```{r}
 all.data <- all.data %>%
   mutate(change_of_choice = case_when(
@@ -233,7 +264,9 @@ all.data <- all.data %>%
 levels(as.factor(all.data$breed)) #some levels need recoding
 all.data<-all.data %>% 
     mutate(breed_recoded = case_when(
-    breed == "wolfspitz" | breed == "spitz" ~ "german_spitz", #LL: I am assuming spitz was also German spitz
+    breed == "wolfspitz" 
+  #  | breed == "spitz" 
+    ~ "german_spitz", #LL: I am assuming spitz was also German spitz
     TRUE ~ as.character(breed) # Preserve original values as character
     ),
   breed_recoded = as.factor(breed_recoded))
