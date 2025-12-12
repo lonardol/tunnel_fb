@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-rm(list=ls())
+#rm(list=ls())
 library(tidyverse)
 library(ggplot2)
 library(lme4)
@@ -16,7 +16,7 @@ library(car)
 source("functions/diagnostic_fcns.r")
 source("functions/glmm_stability.r")
 source("functions/boot_glmm.r")
-#load("~/GitHub/tunnel_fb/workspace/Tunnel_FB_workspace.RData")
+load("./workspace/Tunnel_FB_workspace.RData")
 ```
 
 # Import data
@@ -28,7 +28,6 @@ xdata <- read.csv("data/Tunnel_FB_tested_dogs.csv", header = TRUE) %>%
          condition = as.factor(condition),
          age_months = as.numeric(age_months)) %>% 
   filter(first_touch_letter %in% c("A", "B")) %>%   # Keep rows where first_touch_letter is "A" or "B" in case of NAs
-  filter(CDL_name!="Vanilla2") %>% #should be in the excluded tab, did not meet criteria in fam. phase 1
   droplevels()
 
 which(is.na(xdata$first_touch_letter)) #double check for NAs
@@ -37,22 +36,36 @@ which(is.na(xdata$first_touch_letter)) #double check for NAs
 ldata<-read.csv("data/Tunnel_FB_latency.csv", header = TRUE) %>% 
   select(where(~ any(!is.na(.)))) %>%  #keeps only columns where at least one value is not NA (gets rid of columns containing only NAs) %>% 
   select(-c("X", "Scoring", "Start_Frame", "Stop_Frame", "Value"))
+#LL: 11/12/2025: currently one more dog's latency scoring (Vanilla2)
 ```
 
 ## Obtain durations from latency file
 
 ```{r}
+library(forcats)
+
 ldata<-ldata %>% 
   mutate(duration=Stop-Start) %>% 
   select(-c("Start", "Stop")) %>% 
-  pivot_wider(values_from = duration, names_from = Behaviour)
+  pivot_wider(values_from = duration, names_from = Behaviour) %>% 
+  mutate(Subject=fct_recode(Subject, Chilli6 = "Chili6")) %>% #typo in dogs' names
+  filter(Subject!= "Vanilla2") #LL: delete from Loopy Vanilla2's video (excluded)
 ```
 
 ## Join choice and latency data
 ```{r}
 all.data<-xdata %>% 
   rename(Subject=CDL_name) %>% 
- left_join(ldata, by = "Subject") #left join because currently not all dogs have been coded
+  full_join(ldata, by = "Subject") #left join if not all dogs have been coded
+```
+# Subjects
+```{r}
+summary(all.data$age_months)
+#dogs' mean age: 70.34, range: 9 - 180 months; SD:+/- 40.62 months
+mean(all.data$age[all.data$condition=="false_belief"])
+mean(all.data$age[all.data$condition=="true_belief"])
+sd(all.data$age_months)
+table(all.data$sex)
 ```
 
 
@@ -88,12 +101,9 @@ p.choice <- ggplot(data = plot.data, aes(x = condition, y = mean.choiceA)) +
   geom_errorbar(aes(ymin = mean.choiceA - se.choiceA, ymax = mean.choiceA + #error bars represent standard error
                       se.choiceA),
                 width = .2) +
-  #geom_signif(comparisons=list(c("False Belief", #"Knowledge")), annotations="*",
-  #             y_position = 0.75, tip_length = 0.04, #vjust=0.4) +
-  #ylim(0.2,0.6)+
   theme_classic() +
   labs(x = "Experimental group", y = "Proportion of bucket A choices")+
-  ggtitle("All breeds (N=63)")
+  ggtitle("All breeds (N=120)")
 
 p.choice
 ```
@@ -101,7 +111,7 @@ p.choice
 #save the choices plot
 
 ggsave(
-  "./plots/bucket_A_choices_all_breeds.png",
+  "./plots/bucket_A_choices_all_breeds_N120.png",
   plot = p.choice,
   device = NULL,
   scale = 0.8,
@@ -122,21 +132,56 @@ xdata<-xdata %>%
 table(xdata$breed_type)
 
 table(xdata$first_touch_letter, xdata$breed_type, xdata$condition)
+table(xdata$breed_type, xdata$condition) 
 
-# #add column with experience in dogs sport as binary (yes/no) variable
-# xdata<-xdata %>% 
-#   mutate(training = ifelse(experience_in_dog_sport=="no", "no", "yes"))
-# 
-# table(xdata$training)
-# 
-# table(xdata$FCI_group[xdata$training=="no"])
-# 
-# table(xdata$first_touch_letter, xdata$training, xdata$condition)
+#add column with experience in dogs sport as binary (yes/no) variable
+all.data<-all.data %>%
+  mutate(training = ifelse(is.na(experience_in_dog_sports), "no", "yes"))
+
+table(all.data$training) #no yes 
+                         #72  48 
+
+table(all.data$FCI_group[all.data$training=="no"])
+
+table(all.data$first_touch_letter, all.data$training, xdata$condition)
 
 #experimenter ID
-table(xdata$communicator, xdata$first_touch_letter, xdata$condition)
+table(all.data$communicator, all.data$condition) #5 communicators
+table(all.data$hider, all.data$condition) #5 hiders
+table(all.data$communicator, all.data$first_touch_letter, all.data$condition)
 ```
-### Plot breed performance
+### Choices as a function of breed
+#### Barplot
+```{r pressure, echo=FALSE}
+plot.data.br <- xdata %>%
+  mutate(choice = ifelse(first_touch_letter == "A", 1, 0)) %>%
+  group_by(breed_type) %>% 
+  summarise(
+    mean.choiceA = mean(choice),
+    sd.choiceA = sd(choice),
+    n.choseA = sum(choice),
+    median.choiceA = median(choice),
+    n.tested.per.cond = length(choice),
+    se.choiceA = sd(choice) / sqrt(length(choice))
+  )
+
+##barplot of choices by experimental group
+
+p.choice.breed.type <- ggplot(data = plot.data.br, aes(x = breed_type, y = mean.choiceA)) +
+  geom_bar(stat = "identity", alpha = 0.5) +
+  geom_errorbar(aes(ymin = mean.choiceA - se.choiceA, ymax = mean.choiceA + #error bars represent standard error
+                      se.choiceA),
+                width = .2) +
+  geom_signif(comparisons=list(c("cooperative", "independent")), annotations="*",
+               y_position = 0.95, tip_length = 0.04) + #vjust=0.4
+  #ylim(0.2,0.6)+
+  theme_classic() +
+  labs(x = "Breed type", y = "Proportion of bucket A choices")+
+  ggtitle("Choices as a function of breed type")
+
+p.choice.breed.type
+```
+### Mosaic Plot breed performance
 ```{r}
 cooperative_data<-xdata %>% 
   filter(breed_type!="independent")
@@ -180,15 +225,171 @@ par(mfrow=c(1, 2), mar=c(6, 7.8, 6, 5), mgp=c(4.5, 1.5, 0), tcl=-0.15, las=1,
 plot(mosaic.cooperative.plot.data$condition,mosaic.cooperative.plot.data$first_touch_letter,
   xlab = "Condition",
   ylab = "Bucket chosen",
-  main = "Cooperative breeds" )
+  main = "Cooperative breeds (N=72)" )
 
 plot(mosaic.independent.plot.data$condition,mosaic.independent.plot.data$first_touch_letter,
   xlab = "Condition",
   ylab = "Bucket chosen",
-  main = "Independent breeds" )
+  main = "Independent breeds (N=48)" )
 dev.off()
 
 ```
+### Choices as a function of training
+#### Barplot
+```{r pressure, echo=FALSE}
+plot.data.tr <- all.data %>%
+  mutate(choice = ifelse(first_touch_letter == "A", 1, 0)) %>%
+  group_by(training) %>% 
+  summarise(
+    mean.choiceA = mean(choice),
+    sd.choiceA = sd(choice),
+    n.choseA = sum(choice),
+    median.choiceA = median(choice),
+    n.tested.per.cond = length(choice),
+    se.choiceA = sd(choice) / sqrt(length(choice))
+  )
+
+##barplot of choices by experimental group
+
+p.choice.training <- ggplot(data = plot.data.tr, aes(x = training, y = mean.choiceA)) +
+  geom_bar(stat = "identity", alpha = 0.5) +
+  geom_errorbar(aes(ymin = mean.choiceA - se.choiceA, ymax = mean.choiceA + #error bars represent standard error
+                      se.choiceA),
+                width = .2) +
+  geom_signif(comparisons=list(c("no", "yes")), annotations="*",
+               y_position = 0.95, tip_length = 0.04) + #vjust=0.4
+  #ylim(0.2,0.6)+
+  theme_classic() +
+  labs(x = "Training", y = "Proportion of bucket A choices")+
+  ggtitle("Choices as a function of training")
+
+p.choice.training
+```
+#### Mosaic plot
+```{r}
+table(all.data$condition, all.data$training)
+table(all.data$training, all.data$first_touch_letter)
+
+
+
+training_data<-all.data %>% 
+  filter(training!="no")
+no_training_data<-all.data %>% 
+  filter(training!="yes")
+
+#mosaic plot data for training
+mosaic.training.plot.data  <- training_data %>%
+  mutate(first_touch_letter = fct_relevel(first_touch_letter, "B", "A")) %>%
+  mutate(condition = fct_relevel(
+    fct_recode(
+      condition,
+      "False belief" = "false_belief",
+      "True Belief" = "true_belief"
+    ),
+    "False belief",
+    "True Belief"
+  )) #specify order of factor levels for factor_relevel
+
+#mosaic plot data for no training
+mosaic.no.training.plot.data  <- no_training_data %>%
+  mutate(first_touch_letter = fct_relevel(first_touch_letter, "B", "A")) %>%
+  mutate(condition = fct_relevel(
+    fct_recode(
+      condition,
+    "False belief" = "false_belief",
+      "True Belief" = "true_belief"
+    ),
+    "False belief",
+    "True Belief"
+  )) #specify order of factor levels for factor_relevel
+
+
+#create and save the plot
+png("./plots/training_mosaic_plot.png", width = 1600, height = 800) 
+par(mfrow=c(1, 2), mar=c(6, 7.8, 6, 5), mgp=c(4.5, 1.5, 0), tcl=-0.15, las=1,
+    cex.axis = 2.6,   # Increase axis tick labels
+    cex.lab = 2.9,    # Increase axis labels
+    cex.main = 3.5)     # Increase plot titles
+
+plot(mosaic.training.plot.data$condition,mosaic.training.plot.data$first_touch_letter,
+  xlab = "Condition",
+  ylab = "Bucket chosen",
+  main = "Dogs with training (N=48)" )
+
+plot(mosaic.no.training.plot.data$condition,mosaic.no.training.plot.data$first_touch_letter,
+  xlab = "Condition",
+  ylab = "Bucket chosen",
+  main = "Dogs without training (N=72)" )
+dev.off()
+
+```
+
+###Plot terriers separately
+```{r}
+terrier_data<-xdata %>% 
+  filter(FCI_group==3)
+
+#mosaic plot data for terriers
+mosaic.terrier.plot.data  <- terrier_data %>%
+  mutate(first_touch_letter = fct_relevel(first_touch_letter, "B", "A")) %>%
+  mutate(condition = fct_relevel(
+    fct_recode(
+      condition,
+      "False belief" = "false_belief",
+      "True Belief" = "true_belief"
+    ),
+    "False belief",
+    "True Belief"
+  )) #specify order of factor levels for factor_relevel
+
+#descriptive stats
+mosaic.terrier.agg.data<-mosaic.terrier.plot.data %>% 
+  group_by(condition) %>% 
+  summarise(A_choice=mean(as.numeric(first_touch_letter != levels(first_touch_letter)[1]))) #A coded as 1, B as 0 because B is now the reference category
+
+#create and save plot
+png("./plots/terrier_mosaic_plot.png", width = 8, height = 10, units = "in", res = 620)
+
+par(
+  mar = c(5.5, 6, 5.5, 4),       # Reduced margins
+  mgp = c(4, 1.2, 0),            # Adjust axis title & label positions
+  tcl = -0.15,                   # Tick length
+  las = 1,                       # Axis label orientation
+  cex.axis = 2.2,                # Axis tick labels
+  cex.lab = 2.5,                 # Axis labels
+  cex.main = 3                   # Title
+)
+plot(mosaic.terrier.plot.data$condition,mosaic.terrier.plot.data$first_touch_letter,
+  xlab = "Condition",
+  ylab = "Bucket chosen",
+  main = "Terriers (N=33)")
+dev.off()
+```
+
+## Main effects of breed type and training
+
+```{r}
+library(patchwork)
+main_effects_plot <- p.choice.breed.type + p.choice.training +
+                     plot_annotation(tag_levels = "a")
+main_effects_plot
+```
+### Save main effects plot
+```{r}
+ggsave(
+  "./plots/main_effects_breed_type_training_plots.png",
+  plot = main_effects_plot,
+  device = NULL,
+  scale = 0.7,
+  width = 11,
+  height = 6,
+  #units = c("in", "cm", "mm"),
+  dpi = 620,
+  limitsize = TRUE
+)
+```
+
+
 ### Plot latencies
 ```{r}
 hist(ldata$man_check_duration)
@@ -221,11 +422,11 @@ p.latency <- ggplot(data = plot.latency.data, aes(x = condition, y = mean.latenc
   geom_errorbar(aes(ymin = mean.latency - se.latency, ymax = mean.latency + se.latency), #error bars represent standard error
                 width = .2) +
   geom_signif(comparisons=list(c("false belief", "true belief")), annotations="*",
-               y_position = 26, tip_length = 0.02, vjust=0.4) +
+               y_position = 23, tip_length = 0.02, vjust=0.4) +
   #ylim(0.2,0.6)+
   theme_classic() +
   labs(x = "Experimental group", y = "Latency to approach the tunnel (s)")+
-  ggtitle("All breeds (N=63)")
+  ggtitle("All breeds (N=120)")
 
 p.latency
 ```
@@ -233,10 +434,10 @@ p.latency
 #save the latency plot
 
 ggsave(
-  "./plots/latency_to_approach_tunnel.png",
+  "./plots/latency_to_approach_tunnel_man_check_N120.png",
   plot = p.latency,
   device = NULL,
-  scale = 0.8,
+  scale = 0.6,
   width = 7,
   height = 6,
   #units = c("in", "cm", "mm"),
@@ -244,7 +445,67 @@ ggsave(
   limitsize = TRUE
 )
 ```
+### Plot eyes above barrier during man check
+```{r}
+summary(as.factor(all.data$man_check_eyes_above_barrier)) # 14 dogs looked above
+table(all.data$condition, all.data$man_check_eyes_above_barrier) #perfectly equal between conditions
+all.data$man_check_eyes_above_barrier<-as.numeric(all.data$man_check_eyes_above_barrier)
 
+ggplot(data=all.data, aes(x=condition, y=man_check_eyes_above_barrier)) +
+  geom_bar(stat = "identity") +
+  ylim(c(0,8))+
+  ylab("Nr. dogs who peeked above barrier") +
+  theme_minimal()
+
+```
+### Plot probability to approach tunnel during manipulation check
+```{r}
+plot.approach.tunnel.data <- xdata %>%
+  mutate(condition = fct_relevel(
+    fct_recode(
+      condition,
+      "False belief" = "false_belief",
+      "True belief" = "true_belief"
+    ),
+    "False belief",
+    "True belief"
+  )) %>% #specify order of factor levels for factor_relevel
+group_by(condition) %>%
+  summarise(
+    n_approached = sum(as.numeric(man_check_approach_tunnel)),
+    prop_approach = sum(as.numeric(man_check_approach_tunnel))/length(man_check_approach_tunnel),
+    sd.approach = sd(man_check_approach_tunnel, na.rm = TRUE),
+    se.approach = sd(man_check_approach_tunnel, na.rm = TRUE) / sqrt(sum(!is.na(man_check_approach_tunnel))))
+  
+##barplot of probability to approach tunnel during manipulation check
+
+p.approach <- ggplot(data = plot.approach.tunnel.data, aes(x = condition, y = prop_approach)) +
+  geom_bar(stat = "identity", alpha = 0.5) +
+  geom_errorbar(aes(ymin = prop_approach - se.approach, ymax = prop_approach + se.approach), #error bars represent standard error
+                width = .2) +
+  geom_signif(comparisons=list(c("False belief", "True belief")), annotations="*",
+               y_position = 0.85, tip_length = 0.02, vjust=0.4) +
+  #ylim(0.2,0.6)+
+  theme_classic() +
+  labs(x = "Experimental group", y = "Probability to approach tunnel")+
+  ggtitle("Tunnel approaches during manipulation check")
+
+p.approach
+```
+### Save probability approach tunnel during manipulation check plot
+```{r}
+ggsave(
+  "./plots/probability_to_approach_tunnel_during_man_check.png",
+  plot = p.approach,
+  device = NULL,
+  scale = 0.65,
+  width = 7,
+  height = 6,
+  #units = c("in", "cm", "mm"),
+  dpi = 620,
+  limitsize = TRUE
+)
+```
 # Check how often dogs switched choice after tunnel
 ```{r}
 all.data <- all.data %>%
@@ -254,6 +515,7 @@ all.data <- all.data %>%
     first_choice_letter == first_touch_letter ~ "no change",
     TRUE ~ NA_character_  # handles unexpected combinations
   ))
+sum(all.data$change_of_choice!="no change") #happened once
 ```
 
 
@@ -261,11 +523,13 @@ all.data <- all.data %>%
 
 ##Prepare data
 ```{r}
-levels(as.factor(all.data$breed)) #some levels need recoding
+levels(as.factor(all.data$breed)) 
+#24 breeds
+#some levels need recoding
 all.data<-all.data %>% 
     mutate(breed_recoded = case_when(
     breed == "wolfspitz" 
-  #  | breed == "spitz" 
+    | breed == "spitz" 
     ~ "german_spitz", #LL: I am assuming spitz was also German spitz
     TRUE ~ as.character(breed) # Preserve original values as character
     ),
@@ -275,6 +539,7 @@ levels(as.factor(all.data$breed_recoded))
 
  model.data<-all.data %>% 
   mutate(breed_type = ifelse(FCI_group %in% c("1", "2", "7", "8"), "cooperative", "independent")) %>%  #add breed type
+  mutate(choice = ifelse(first_touch_letter == "A", 1, 0)) %>% #recode so that we look at A choices
   #making sure factors are treated as such
   mutate(Subject=as.factor(Subject)) %>% 
   mutate(breed=as.factor(breed)) %>% 
@@ -284,7 +549,7 @@ levels(as.factor(all.data$breed_recoded))
   mutate(first_baited_bucket=as.factor(first_baited_bucket)) %>% 
   # select(-first_bucket_A) %>% 
   mutate(FCI_group=as.factor(FCI_group)) %>% 
-  #mutate(training=as.factor(training)) %>%
+  mutate(training=as.factor(training)) %>%
   mutate(hider=as.factor(hider)) %>%
   mutate(communicator=as.factor(communicator)) %>%
   #mutate(experimenter_dyad=as.factor(experimenter_dyad)) %>%
@@ -295,27 +560,23 @@ levels(as.factor(all.data$breed_recoded))
          condition.c = as.numeric(scale(as.numeric(as.factor(condition)), scale=F, center=T)),
          breed_type.c = as.numeric(scale(as.numeric(as.factor(breed_type)), scale=F, center=T)),
          first_baited_bucket.c = as.numeric(scale(as.numeric(as.factor(first_baited_bucket)), scale=F, center=T)),
-         #training.c = as.numeric(scale(as.numeric(as.factor(training)), scale=F, center=T))
+         training.c = as.numeric(scale(as.numeric(as.factor(training)), scale=F, center=T))
          )
-
-
 
 view(dfSummary(model.data))
 
-summary(model.data$age_months)
-
 #checking familiarisation performance is as expected (max 4 trials per phase)
 which(model.data$nr_fam_phase1_trials>4) 
+which(model.data$nr_fam_phase2_trials>4) 
+which(model.data$nr_fam_phase3_trials>4) #all ok
 
-#check new levels of breed 
-unique(levels(model.data$breed_recoded)) #17 different breeds
 
 #checking if the data preparations worked as expected
 str(model.data)
 ```
 ### GLMM 01: choice - model with breed as random intercept
 ```{r}
-xx.fe.re=fe.re.tab(fe.model="first_touch_letter ~ condition*breed_type + age_months + sex + first_baited_bucket",
+xx.fe.re=fe.re.tab(fe.model="choice ~ condition*breed_type + age_months + sex + first_baited_bucket",
                    re="(1|breed_recoded)", data=model.data)
 xx.fe.re$summary
 ```
@@ -323,19 +584,17 @@ xx.fe.re$summary
 ``` {r mixed modeling, error=TRUE}
 #full model with all rs within breed
 
-full.choice.int <- glmer(first_touch_letter ~ condition*breed_type + z.age + sex + first_baited_bucket+
-             (1+ sex.c + condition.c + first_baited_bucket.c + z.age || breed_recoded),
+full.choice.int <- glmer(choice ~ condition*breed_type + z.age + sex + first_baited_bucket+
+             (1+ sex.c + condition.c + first_baited_bucket.c + z.age | breed_recoded),
              data = model.data, family = binomial,
              control=glmerControl(optimizer="bobyqa",optCtrl=list(maxfun=2e5))
 )
-
-#had to exclude correlation parameters between rss and icpt because they were unidentifiable
 ```
 
 #### model output
   + Coefficients
 ```{r}
-round(summary(full.choice.int)$coefficients, 3)
+round(summary(full.choice.int)$coefficients, 2)
 ```
   + Individual predictors: likelihood ratio tests  
 Drop1: P values for the individual effects were based on likelihood ratio tests comparing the full with respective reduced models (Barr et al., 2013; R function drop1 with argument 'test' set to "Chisq"). 
@@ -343,32 +602,42 @@ Drop1: P values for the individual effects were based on likelihood ratio tests 
 ```{r}
 drop1.full=drop1(full.choice.int, test="Chisq")
 round(drop1.full,3)
-#interaction not significant
+#interaction not significant (chisq=0.004, p=0.952)
 ```
 ####the interaction condition*breed_type is not significant, so we remove it but keep both main effects
 ``` {r mixed modeling, error=TRUE}
 #full model with all rs within breed
 
-full.choice.breed <- glmer(first_touch_letter ~ condition + breed_type + z.age + sex + first_baited_bucket+
-             (1+ sex.c + condition.c + first_baited_bucket.c + z.age || breed_recoded),
+full.choice.breed <- glmer(choice ~ condition + breed_type + z.age + sex + first_baited_bucket+
+             (1+ sex.c + condition.c + first_baited_bucket.c + z.age | breed_recoded),
              data = model.data, family = binomial,
              control=glmerControl(optimizer="bobyqa",optCtrl=list(maxfun=2e5))
 )
 
-#had to exclude correlation parameters between random slopes and intercept because they were unidentifiable
+#null model without breed type and condition
+
+null.choice.breed <- glmer(choice ~  z.age + sex + first_baited_bucket+
+             (1+ sex.c + condition.c + first_baited_bucket.c + z.age | breed_recoded),
+             data = model.data, family = binomial,
+             control=glmerControl(optimizer="bobyqa",optCtrl=list(maxfun=2e5))
+)
+
+as.data.frame(anova(null.choice.breed, full.choice.breed, test="Chisq")) #full-null model comparison is significant, so we can proceed to draw inference about the fixed effects of condition and breed type. 
 ```
 #### model output
   + Coefficients
 ```{r}
-round(summary(full.choice.breed)$coefficients, 3)
+round(summary(full.choice.breed)$coefficients, 2)
 ```
   + Individual predictors: likelihood ratio tests  
 Drop1: P values for the individual effects were based on likelihood ratio tests comparing the full with respective reduced models (Barr et al., 2013; R function drop1 with argument 'test' set to "Chisq"). 
 
 ```{r}
-drop1.full=drop1(full.choice.breed, test="Chisq")
+drop1.full=drop1(full.choice.breed, test="Chisq") %>% 
+  filter(!is.na(npar)) %>% 
+  add_row(npar = rep(NA,1),  .before = 1) #add column(s) for output table
 round(drop1.full,3)
-#the interaction condition*breed_type is not significant, so we remove it but keep both main effects
+#condition not significant, breed type yes
 ```
 #### confidence intervals
 
@@ -407,14 +676,182 @@ vif(full.choice.breed) #collinearity is no problem
 ```{r}
 ranef.diagn.plot(full.choice.breed)
 ```
+#### Output table - choice (breed type)
 
-
-#Analyse latency
 ```{r}
+mm1_choice_output_table <-
+  bind_cols(as.data.frame(summary(full.choice.breed)$coeff),
+            drop1.full,
+            res.breed,
+            xx.breed[1:6,-1] 
+            ) %>%
+  dplyr::select(
+    Estimate,
+    SE = `Std. Error`,
+    Chi2 = LRT,
+    df = npar,
+    p = `Pr(Chi)`,
+    LowerCI = X2.5.,
+    UpperCI = X97.5.,
+    min,
+    max,
+  ) %>% 
+  mutate(across(.cols = c(p), ~ format(round(.x, 3), nsmall = 3))) %>%
+  mutate(across(.cols = c(Estimate:df), ~ format(round(.x, 2), nsmall = 2))) %>%
+ mutate(across(.cols = c(LowerCI:max), ~ format(round(.x, 2), nsmall = 2))) %>%  #mutate(across(Chi2:p, ~replace_na(.x, "")))%>%
+  mutate(p = replace(p, p == 0, "<0.001"))
+
+write.csv(mm1_choice_output_table, file = "saves/mm1_choice_output_table_breed_type.csv")
+```
+# GLMM02: choice as a function of training*condition and breed type
+```{r}
+### GLMM 02: choice - model with training as predictor
+
+xx.fe.re2=fe.re.tab(fe.model="choice ~ training*condition + breed_type + age_months + sex + first_baited_bucket",
+                   re="(1|breed_recoded)", data=model.data)
+xx.fe.re2$summary
+```
+``` {r mixed modeling, error=TRUE}
+#full model with all rs within breed
+
+full.choice.tr.int <- glmer(choice ~ training*condition + breed_type + z.age + sex + first_baited_bucket+
+             (1+ sex.c + training.c*condition.c + first_baited_bucket.c + z.age || breed_recoded),
+             data = model.data, family = binomial,
+             control=glmerControl(optimizer="bobyqa",optCtrl=list(maxfun=2e5))
+)
+
+drop1.full.choice.tr.int=drop1(full.choice.tr.int, test="Chisq")
+round(drop1.full.choice.tr.int,3)
+#interaction not significant (chisq=0.010, p=0.921)
+
+#refit model without interaction
+full.choice.tr <- glmer(choice ~ training + condition + breed_type + z.age + sex + first_baited_bucket+
+             (1+ sex.c + training.c + condition.c + first_baited_bucket.c + z.age || breed_recoded),
+             data = model.data, family = binomial,
+             control=glmerControl(optimizer="bobyqa",optCtrl=list(maxfun=2e5))
+)
+
+
+#null model without training, condition and breed type
+
+null.choice.tr <- glmer(choice ~ z.age + sex + first_baited_bucket+
+             (1+ sex.c + training.c + first_baited_bucket.c + z.age || breed_recoded),
+             data = model.data, family = binomial,
+             control=glmerControl(optimizer="bobyqa",optCtrl=list(maxfun=2e5))
+)
+
+as.data.frame(anova(null.choice.tr, full.choice.tr, test="Chisq")) #full-null model comparison is significant, so we can proceed to draw inference about the fixed effects of training, condition and breed type. 
+```
+#### model output
+  + Coefficients
+```{r}
+round(summary(full.choice.tr)$coefficients, 2)
+```
+  + Individual predictors: likelihood ratio tests  
+Drop1: P values for the individual effects were based on likelihood ratio tests comparing the full with respective reduced models (Barr et al., 2013; R function drop1 with argument 'test' set to "Chisq"). 
+
+```{r}
+drop1.full.tr=drop1(full.choice.tr, test="Chisq") %>% 
+  filter(!is.na(npar)) %>% 
+  add_row(npar = rep(NA,1),  .before = 1) #add column(s) for output table
+round(drop1.full.tr,3)
+#training significant: dogs with training experience are more likely to be misled than the ones without training (irrespective of breed type and condition)
+```
+#### confidence intervals
+
+```{r}
+boot.res.breed.train=boot.glmm.pred(model.res=full.choice.tr, excl.warnings=T,
+	nboots=1000, para=T)
+res.breed.train<-round(boot.res.breed.train$ci.estimates, 2)
+res.breed.train
+```
+
+#### model stability
+
+```{r eval=FALSE, include=FALSE}
+
+# One breed at a time excluded to assess the impact of possible outliers 
+m.stab.breed.tr <- glmm.model.stab(model.res = full.choice.tr, use = c("breed_recoded"))
+
+table(m.stab.breed.tr$detailed$lme4.warnings) #several models failed to converge
+
+xx.breed.tr <- as.data.frame(round(m.stab.breed.tr$summary[, -1], 2))
+#table with model stability
+xx.breed.tr
+
+#plot of stability (remember to execute all three lines at the same time)
+png("plots/bin_glmm02_breed_type_training_stability.png")
+m.stab.plot(round(m.stab.breed.tr$summary[, -1], 3))
+dev.off()
+```
+
+#### Variance Inflation Factors
+```{r}
+vif(full.choice.tr) #collinearity is no problem
+```
+
+#### Distribution of BLUPs
+```{r}
+ranef.diagn.plot(full.choice.tr)
+```
+#### Output table - choice: condition + training + breed type
+
+```{r}
+mm2_choice_output_table_tr <-
+  bind_cols(as.data.frame(summary(full.choice.tr)$coeff),
+            drop1.full.tr,
+            res.breed.train,
+            xx.breed.tr[1:7,-1]
+            ) %>%
+  dplyr::select(
+    Estimate,
+    SE = `Std. Error`,
+    Chi2 = LRT,
+    df = npar,
+    p = `Pr(Chi)`,
+    LowerCI = X2.5.,
+    UpperCI = X97.5.,
+    min,
+    max,
+    #delta_aic
+  ) %>% #
+  mutate(across(.cols = c(p), ~ format(round(.x, 3), nsmall = 3))) %>%
+  mutate(across(.cols = c(Estimate:df), ~ format(round(.x, 2), nsmall = 2))) %>%
+ mutate(across(.cols = c(LowerCI:max), ~ format(round(.x, 2), nsmall = 2))) %>%  #mutate(across(Chi2:p, ~replace_na(.x, "")))%>%
+  mutate(p = replace(p, p == 0, "<0.001"))
+
+write.csv(mm2_choice_output_table_tr, file = "./saves/mm2_choice_output_table_breed_type_training.csv")
+```
+
+# Analyse latency
+```{r}
+hist(all.data$latency)
+range(all.data$latency)
+range(all.data$man_check_duration)
+hist(all.data$man_check_duration)
+
 t.test(all.data$latency[all.data$condition=="false_belief"], all.data$latency[all.data$condition=="true_belief"], paired=FALSE)
+#t = 3.0905, df = 117.58, p-value = 0.002495
 
 #check mean man.check.dur
-t.test(all.data$man_check_duration[all.data$condition=="false_belief"], all.data$man_check_duration[all.data$condition=="true_belief"], paired=FALSE) #careful! These are almost different, with TB being systematically longer than FB!!
+t.test(all.data$man_check_duration[all.data$condition=="false_belief"], all.data$man_check_duration[all.data$condition=="true_belief"], paired=FALSE) #not significantly different, as expected: t = -1.416, df = 59, p-value = 0.162
+```
+#Analyse man check approach tunnel
+
+```{r}
+fb.data<-xdata %>% 
+  filter(condition=="false_belief")
+tb.data<-xdata %>% 
+  filter(condition=="true_belief")
+
+#proportion dogs approaching tunnel in TB: 75%
+sum(as.numeric(xdata$man_check_approach_tunnel[xdata$condition=="true_belief"]))/length(xdata$man_check_approach_tunnel[xdata$condition=="true_belief"])
+
+#proportion dogs approaching tunnel in FB: 55% 
+sum(as.numeric(xdata$man_check_approach_tunnel[xdata$condition=="false_belief"]))/length(xdata$man_check_approach_tunnel[xdata$condition=="false_belief"])
+
+#binomial test to check if these two proportions differ
+binom.test(sum(as.numeric(xdata$man_check_approach_tunnel[xdata$condition=="false_belief"])), 60, p=sum(as.numeric(xdata$man_check_approach_tunnel[xdata$condition=="true_belief"])/60))
 ```
 
 
