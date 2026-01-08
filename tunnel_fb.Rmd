@@ -101,7 +101,14 @@ p.choice <- ggplot(data = plot.data, aes(x = condition, y = mean.choiceA)) +
   geom_errorbar(aes(ymin = mean.choiceA - se.choiceA, ymax = mean.choiceA + #error bars represent standard error
                       se.choiceA),
                 width = .2) +
+  ylim(0,1) + 
   theme_classic() +
+  theme(
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_text(size = 13),
+  axis.title.y = element_text(size = 13)
+  ) +
   labs(x = "Experimental group", y = "Proportion of bucket A choices")+
   ggtitle("All breeds (N=120)")
 
@@ -114,7 +121,7 @@ ggsave(
   "./plots/bucket_A_choices_all_breeds_N120.png",
   plot = p.choice,
   device = NULL,
-  scale = 0.8,
+  scale = 0.7,
   width = 7,
   height = 6,
   #units = c("in", "cm", "mm"),
@@ -176,6 +183,12 @@ p.choice.breed.type <- ggplot(data = plot.data.br, aes(x = breed_type, y = mean.
                y_position = 0.95, tip_length = 0.04) + #vjust=0.4
   #ylim(0.2,0.6)+
   theme_classic() +
+   theme(
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_text(size = 13),
+  axis.title.y = element_text(size = 13)
+  ) +
   labs(x = "Breed type", y = "Proportion of bucket A choices")+
   ggtitle("Choices as a function of breed type")
 
@@ -260,6 +273,12 @@ p.choice.training <- ggplot(data = plot.data.tr, aes(x = training, y = mean.choi
                y_position = 0.95, tip_length = 0.04) + #vjust=0.4
   #ylim(0.2,0.6)+
   theme_classic() +
+   theme(
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_text(size = 13),
+  axis.title.y = element_text(size = 13)
+  ) +
   labs(x = "Training", y = "Proportion of bucket A choices")+
   ggtitle("Choices as a function of training")
 
@@ -370,8 +389,12 @@ dev.off()
 
 ```{r}
 library(patchwork)
-main_effects_plot <- p.choice.breed.type + p.choice.training +
-                     plot_annotation(tag_levels = "a")
+main_effects_plot <-
+  (p.choice + labs(title = "Choices as a function of condition")) +
+  p.choice.breed.type +
+  p.choice.training #+
+  plot_annotation(tag_levels = "a")
+
 main_effects_plot
 ```
 ### Save main effects plot
@@ -381,8 +404,8 @@ ggsave(
   plot = main_effects_plot,
   device = NULL,
   scale = 0.7,
-  width = 11,
-  height = 6,
+  width = 16,
+  height = 7,
   #units = c("in", "cm", "mm"),
   dpi = 620,
   limitsize = TRUE
@@ -506,6 +529,32 @@ ggsave(
   limitsize = TRUE
 )
 ```
+# Combined plot man check
+```{r}
+library(patchwork)
+man_check_plot <-
+  (p.latency  + theme(plot.title = element_blank())) + #remove plot titles
+  (p.approach + theme(plot.title = element_blank())) +
+  plot_annotation(tag_levels = "a")
+
+man_check_plot
+```
+## Save comnined plot man. check
+```{r}
+ggsave(
+  "./plots/man_check_plots.png",
+  plot = man_check_plot,
+  device = NULL,
+  scale = 0.7,
+  width = 11,
+  height = 6,
+  #units = c("in", "cm", "mm"),
+  dpi = 620,
+  limitsize = TRUE
+)
+```
+
+
 # Check how often dogs switched choice after tunnel
 ```{r}
 all.data <- all.data %>%
@@ -600,8 +649,8 @@ round(summary(full.choice.int)$coefficients, 2)
 Drop1: P values for the individual effects were based on likelihood ratio tests comparing the full with respective reduced models (Barr et al., 2013; R function drop1 with argument 'test' set to "Chisq"). 
 
 ```{r}
-drop1.full=drop1(full.choice.int, test="Chisq")
-round(drop1.full,3)
+drop1.full.int=drop1(full.choice.int, test="Chisq")
+round(drop1.full.int,3)
 #interaction not significant (chisq=0.004, p=0.952)
 ```
 ####the interaction condition*breed_type is not significant, so we remove it but keep both main effects
@@ -830,6 +879,13 @@ range(all.data$latency)
 range(all.data$man_check_duration)
 hist(all.data$man_check_duration)
 
+#descriptive stats
+mean(all.data$latency[all.data$condition=="false_belief"])
+sd(all.data$latency[all.data$condition=="false_belief"])
+mean(all.data$latency[all.data$condition=="true_belief"])
+sd(all.data$latency[all.data$condition=="true_belief"])
+
+#t-test
 t.test(all.data$latency[all.data$condition=="false_belief"], all.data$latency[all.data$condition=="true_belief"], paired=FALSE)
 #t = 3.0905, df = 117.58, p-value = 0.002495
 
