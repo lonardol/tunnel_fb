@@ -36,7 +36,6 @@ which(is.na(xdata$first_touch_letter)) #double check for NAs
 ldata<-read.csv("data/Tunnel_FB_latency.csv", header = TRUE) %>% 
   select(where(~ any(!is.na(.)))) %>%  #keeps only columns where at least one value is not NA (gets rid of columns containing only NAs) %>% 
   select(-c("X", "Scoring", "Start_Frame", "Stop_Frame", "Value"))
-#LL: 11/12/2025: currently one more dog's latency scoring (Vanilla2)
 ```
 
 ## Obtain durations from latency file
@@ -49,14 +48,14 @@ ldata<-ldata %>%
   select(-c("Start", "Stop")) %>% 
   pivot_wider(values_from = duration, names_from = Behaviour) %>% 
   mutate(Subject=fct_recode(Subject, Chilli6 = "Chili6")) %>% #typo in dogs' names
-  filter(Subject!= "Vanilla2") #LL: delete from Loopy Vanilla2's video (excluded)
+  filter(Subject!= "Vanilla2") %>% # Vanilla2 was excluded but her video was still coded accidentally
+  rename(CDL_name=Subject)
 ```
 
 ## Join choice and latency data
 ```{r}
 all.data<-xdata %>% 
-  rename(Subject=CDL_name) %>% 
-  full_join(ldata, by = "Subject") #left join if not all dogs have been coded
+full_join(ldata, by = "CDL_name") #left join if not all dogs have been coded
 ```
 # Subjects
 ```{r}
@@ -66,6 +65,38 @@ mean(all.data$age[all.data$condition=="false_belief"])
 mean(all.data$age[all.data$condition=="true_belief"])
 sd(all.data$age_months)
 table(all.data$sex)
+table(all.data$sex, all.data$condition)
+table(all.data$sex, all.data$training)
+table(all.data$sex, all.data$breed_type)
+table(all.data$training, all.data$breed_type)
+table(all.data$breed_type, all.data$condition)  
+table(all.data$training, all.data$condition)
+
+tb.data<-all.data %>% 
+  filter(condition=="true_belief")
+fb.data<-all.data %>% 
+  filter(condition=="false_belief")
+
+summary(tb.data$age_months)
+sd(tb.data$age_months)
+
+summary(fb.data$age_months)
+sd(fb.data$age_months)
+
+summary(cooperative_data$age_months)
+sd(cooperative_data$age_months)
+
+summary(independent_data$age_months)
+sd(independent_data$age_months)
+
+summary(training_data$age_months)
+sd(training_data$age_months)
+
+summary(no_training_data$age_months)
+sd(no_training_data$age_months)
+
+table(all.data$condition, all.data$communicator)
+table(all.data$condition, all.data$hider)
 ```
 
 
@@ -143,7 +174,8 @@ table(xdata$breed_type, xdata$condition)
 
 #add column with experience in dogs sport as binary (yes/no) variable
 all.data<-all.data %>%
-  mutate(training = ifelse(is.na(experience_in_dog_sports), "no", "yes"))
+  mutate(training = ifelse(is.na(experience_in_dog_sports), "no", "yes")) %>% 
+  mutate(breed_type = ifelse(FCI_group %in% c("1", "2", "7", "8"), "cooperative", "independent"))
 
 table(all.data$training) #no yes 
                          #72  48 
@@ -385,14 +417,14 @@ plot(mosaic.terrier.plot.data$condition,mosaic.terrier.plot.data$first_touch_let
 dev.off()
 ```
 
-## Main effects of breed type and training
+## Main effects of breed type and training - Fig. 2
 
 ```{r}
 library(patchwork)
 main_effects_plot <-
   (p.choice + labs(title = "Choices as a function of condition")) +
   p.choice.breed.type +
-  p.choice.training #+
+  p.choice.training +
   plot_annotation(tag_levels = "a")
 
 main_effects_plot
@@ -908,6 +940,67 @@ sum(as.numeric(xdata$man_check_approach_tunnel[xdata$condition=="false_belief"])
 
 #binomial test to check if these two proportions differ
 binom.test(sum(as.numeric(xdata$man_check_approach_tunnel[xdata$condition=="false_belief"])), 60, p=sum(as.numeric(xdata$man_check_approach_tunnel[xdata$condition=="true_belief"])/60))
+```
+#Inter-observer reliability
+```{r}
+# second, naive coder watched 36 (30% of our total) videos and scored: dogs' first touched container; latency and probability to approach tunnel.
+
+#import second codings
+
+#latency
+inter_obs_latency<-read.csv("data/inter_observer_latency.csv") %>% 
+  select(where(~ any(!is.na(.)))) %>%  #keeps only columns where at least one value is not NA (gets rid of columns containing only NAs) %>% 
+  select(-c("...1","Scoring", "Start_Frame", "Stop_Frame", "Value")) %>% 
+   mutate(duration=Stop-Start) %>% 
+  select(-c("Start", "Stop")) %>% 
+  pivot_wider(values_from = duration, names_from = Behaviour) %>% 
+  mutate(Subject=fct_recode(Subject, Chilli6 = "Chili6")) %>% #typo in dog's name
+ rename(CDL_name=Subject) %>% 
+ rename(latency2=latency)
+
+
+#full dataset
+reliab.data<-read.csv("data/Inter_observer_reliability.csv") %>% 
+  left_join(
+    xdata %>% 
+      select(CDL_name, man_check_approach_tunnel, first_touch_letter),
+    by = "CDL_name") %>% 
+      left_join(ldata %>% 
+      select(CDL_name, latency)) %>% 
+  full_join(inter_obs_latency) %>% 
+  mutate(first_touch_letter.x=as.factor(first_touch_letter.x),
+         first_touch_letter.y=as.factor(first_touch_letter.y),
+         Approached_tunnel=as.factor(Approached_tunnel),
+         man_check_approach_tunnel=as.factor(man_check_approach_tunnel))
+ 
+ 
+# First choice
+
+#Calculate Percentage Agreement
+percentage_agreement <- sum(reliab.data$first_touch_letter.x == reliab.data$first_touch_letter.y) / nrow(reliab.data) * 100
+cat("Percentage Agreement:", round(percentage_agreement, 2), "%\n") #97.22%
+
+#calculate Cohen's kappa
+library(irr)
+kappa_result <- kappa2(reliab.data[, c("first_touch_letter.x", "first_touch_letter.y")], "unweighted")
+kappa_result
+#Subjects = 36; Raters = 2 Kappa = 0.933 z = 5.61 p-value = 2.03e-08 
+
+
+# Probability to approach the tunnel
+
+#Calculate Percentage Agreement
+percentage_agreement.at <- sum(reliab.data$Approached_tunnel == reliab.data$man_check_approach_tunnel) / nrow(reliab.data) * 100
+cat("Percentage Agreement:", round(percentage_agreement.at, 2), "%\n") # 88.89 %
+
+#calculate Cohen's kappa
+kappa_result.at <- kappa2(reliab.data[, c("Approached_tunnel", "man_check_approach_tunnel")], "unweighted")
+kappa_result.at
+#Subjects = 36; Raters = 2 Kappa = 0.933 z = 5.61 p-value = 2.03e-08 
+
+
+# Latency to approach tunnel
+icc(reliab.data[,c("latency", "latency2")])
 ```
 
 
