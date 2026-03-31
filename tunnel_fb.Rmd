@@ -98,6 +98,11 @@ sd(no_training_data$age_months)
 table(all.data$condition, all.data$communicator)
 table(all.data$condition, all.data$hider)
 ```
+# Descriptive stats
+```{r}
+prop.table(table(fb.data$first_touch_letter, fb.data$breed_type), margin = 2) # proportion choices within each breed type and in the FB condition
+prop.table(table(tb.data$first_touch_letter, tb.data$breed_type), margin = 2) # proportion choices within each breed type and in the TB condition
+```
 
 
 # Plots
