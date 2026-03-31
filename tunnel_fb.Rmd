@@ -616,7 +616,7 @@ all.data<-all.data %>%
     mutate(breed_recoded = case_when(
     breed == "wolfspitz" 
     | breed == "spitz" 
-    ~ "german_spitz", #LL: I am assuming spitz was also German spitz
+    ~ "german_spitz", #spitz was also German spitz
     TRUE ~ as.character(breed) # Preserve original values as character
     ),
   breed_recoded = as.factor(breed_recoded))
